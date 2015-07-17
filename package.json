@@ -1,0 +1,33 @@
+{
+  "name": "dom_caret",
+  "version": "0.0.1",
+  "description": "DOM caret position helpers for the browser and node.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nathanfaucett/dom_caret.git"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "example": "comn -f example/src/index.js -o example/index.js"
+  },
+  "keywords": [
+    "dom_caret",
+    "dom_caret.js"
+  ],
+  "author": "Nathan Faucett",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "comn": "git://github.com/nathanfaucett/comn.git",
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-jsbeautifier": "^0.2.7"
+  },
+  "dependencies": {
+    "blur_node": "git://github.com/nathanfaucett/blur_node.git",
+    "environment": "git://github.com/nathanfaucett/environment.git",
+    "focus_node": "git://github.com/nathanfaucett/focus_node.git",
+    "get_active_element": "git://github.com/nathanfaucett/get_active_element.git",
+    "is_text_input_element": "git://github.com/nathanfaucett/is_text_input_element.git"
+  }
+}
