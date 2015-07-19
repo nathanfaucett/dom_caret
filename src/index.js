@@ -24,8 +24,10 @@ domCaret.get = function(node) {
             focusNode(node);
         }
         selection = getNodeCaretPosition(node);
-        blurNode(node);
-        focusNode(activeElement);
+        if (!isFocused) {
+            blurNode(node);
+            focusNode(activeElement);
+        }
         return selection;
     } else {
         return {
