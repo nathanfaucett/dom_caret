@@ -85,8 +85,10 @@ domCaret.get = function(node) {
             focusNode(node);
         }
         selection = getNodeCaretPosition(node);
-        blurNode(node);
-        focusNode(activeElement);
+        if (!isFocused) {
+            blurNode(node);
+            focusNode(activeElement);
+        }
         return selection;
     } else {
         return {
@@ -199,15 +201,15 @@ var isNode;
 
 
 if (typeof(Node) !== "undefined" && isFunction(Node)) {
-    isNode = function isNode(obj) {
-        return obj instanceof Node;
+    isNode = function isNode(value) {
+        return value instanceof Node;
     };
 } else {
-    isNode = function isNode(obj) {
+    isNode = function isNode(value) {
         return (
-            typeof(obj) === "object" &&
-            typeof(obj.nodeType) === "number" &&
-            typeof(obj.nodeName) === "string"
+            typeof(value) === "object" &&
+            typeof(value.nodeType) === "number" &&
+            typeof(value.nodeName) === "string"
         );
     };
 }
