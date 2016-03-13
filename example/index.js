@@ -99,11 +99,20 @@ domCaret.get = function(node) {
 };
 
 domCaret.set = function(node, start, end) {
+    var activeElement, isFocused;
+
     if (isTextInputElement(node)) {
-        if (getActiveElement() !== node) {
+        activeElement = getActiveElement();
+        isFocused = activeElement === node;
+
+        if (!isFocused) {
             focusNode(node);
         }
         setNodeCaretPosition(node, start, end === undefined ? start : end);
+        if (!isFocused) {
+            blurNode(node);
+            focusNode(activeElement);
+        }
     }
 };
 
