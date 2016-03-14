@@ -61,9 +61,8 @@ function(require, exports, module, global) {
 
 var environment = require(2),
     focusNode = require(3),
-    blurNode = require(6),
-    getActiveElement = require(7),
-    isTextInputElement = require(9);
+    getActiveElement = require(6),
+    isTextInputElement = require(8);
 
 
 var domCaret = exports,
@@ -86,7 +85,6 @@ domCaret.get = function(node) {
         }
         selection = getNodeCaretPosition(node);
         if (!isFocused) {
-            blurNode(node);
             focusNode(activeElement);
         }
         return selection;
@@ -110,7 +108,6 @@ domCaret.set = function(node, start, end) {
         }
         setNodeCaretPosition(node, start, end === undefined ? start : end);
         if (!isFocused) {
-            blurNode(node);
             focusNode(activeElement);
         }
     }
@@ -128,9 +125,16 @@ if (!!window.getSelection) {
     };
 } else if (document.selection && document.selection.createRange) {
     getNodeCaretPosition = function getNodeCaretPosition(node) {
-        var range = document.selection.createRange();
+        var range = document.selection.createRange(),
+            position;
+
         range.moveStart("character", -node.value.length);
-        return range.text.length;
+        position = range.text.length;
+
+        return {
+            start: position,
+            end: position
+        };
     };
     setNodeCaretPosition = function setNodeCaretPosition(node, start, end) {
         var range = ctrl.createTextRange();
@@ -255,25 +259,7 @@ module.exports = isFunction;
 },
 function(require, exports, module, global) {
 
-var isNode = require(4);
-
-
-module.exports = blurNode;
-
-
-function blurNode(node) {
-    if (isNode(node) && node.blur) {
-        try {
-            node.blur();
-        } catch (e) {}
-    }
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isDocument = require(8),
+var isDocument = require(7),
     environment = require(2);
 
 
@@ -311,8 +297,8 @@ function isDocument(obj) {
 },
 function(require, exports, module, global) {
 
-var indexOf = require(10),
-    isNullOrUndefined = require(14);
+var indexOf = require(9),
+    isNullOrUndefined = require(13);
 
 
 var supportedInputTypes = [
@@ -335,8 +321,8 @@ function isTextInputElement(value) {
 },
 function(require, exports, module, global) {
 
-var isLength = require(11),
-    isObjectLike = require(13);
+var isLength = require(10),
+    isObjectLike = require(12);
 
 
 module.exports = indexOf;
@@ -363,7 +349,7 @@ function arrayIndexOf(array, value, fromIndex) {
 },
 function(require, exports, module, global) {
 
-var isNumber = require(12);
+var isNumber = require(11);
 
 
 var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
@@ -391,7 +377,7 @@ function isNumber(obj) {
 },
 function(require, exports, module, global) {
 
-var isNullOrUndefined = require(14);
+var isNullOrUndefined = require(13);
 
 
 module.exports = isObjectLike;

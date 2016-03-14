@@ -1,6 +1,5 @@
 var environment = require("environment"),
     focusNode = require("focus_node"),
-    blurNode = require("blur_node"),
     getActiveElement = require("get_active_element"),
     isTextInputElement = require("is_text_input_element");
 
@@ -25,7 +24,6 @@ domCaret.get = function(node) {
         }
         selection = getNodeCaretPosition(node);
         if (!isFocused) {
-            blurNode(node);
             focusNode(activeElement);
         }
         return selection;
@@ -49,7 +47,6 @@ domCaret.set = function(node, start, end) {
         }
         setNodeCaretPosition(node, start, end === undefined ? start : end);
         if (!isFocused) {
-            blurNode(node);
             focusNode(activeElement);
         }
     }
@@ -67,9 +64,16 @@ if (!!window.getSelection) {
     };
 } else if (document.selection && document.selection.createRange) {
     getNodeCaretPosition = function getNodeCaretPosition(node) {
-        var range = document.selection.createRange();
+        var range = document.selection.createRange(),
+            position;
+
         range.moveStart("character", -node.value.length);
-        return range.text.length;
+        position = range.text.length;
+
+        return {
+            start: position,
+            end: position
+        };
     };
     setNodeCaretPosition = function setNodeCaretPosition(node, start, end) {
         var range = ctrl.createTextRange();

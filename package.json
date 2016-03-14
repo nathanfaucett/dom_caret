@@ -24,7 +24,6 @@
     "grunt-jsbeautifier": "^0.2.7"
   },
   "dependencies": {
-    "blur_node": "git://github.com/nathanfaucett/blur_node.git",
     "environment": "git://github.com/nathanfaucett/environment.git",
     "focus_node": "git://github.com/nathanfaucett/focus_node.git",
     "get_active_element": "git://github.com/nathanfaucett/get_active_element.git",
