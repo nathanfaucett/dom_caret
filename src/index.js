@@ -1,7 +1,7 @@
-var environment = require("environment"),
-    focusNode = require("focus_node"),
-    getActiveElement = require("get_active_element"),
-    isTextInputElement = require("is_text_input_element");
+var environment = require("@nathanfaucett/environment"),
+    focusNode = require("@nathanfaucett/focus_node"),
+    getActiveElement = require("@nathanfaucett/get_active_element"),
+    isTextInputElement = require("@nathanfaucett/is_text_input_element");
 
 
 var domCaret = exports,
