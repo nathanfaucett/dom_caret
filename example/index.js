@@ -1,5 +1,19 @@
-(function(dependencies, undefined, global) {
-    var cache = [];
+(function(dependencies, chunks, undefined, global) {
+    
+    var cache = [],
+        cacheCallbacks = {},
+        locked = false;
+    
+
+    function Module() {
+        this.id = null;
+        this.filename = null;
+        this.dirname = null;
+        this.exports = {};
+        this.loaded = false;
+    }
+
+    Module.prototype.require = require;
 
     function require(index) {
         var module = cache[index],
@@ -9,14 +23,13 @@
             return module.exports;
         } else {
             callback = dependencies[index];
-            exports = {};
 
-            cache[index] = module = {
-                exports: exports,
-                require: require
-            };
+            cache[index] = module = new Module();
+            exports = module.exports;
 
-            callback.call(exports, require, exports, module, global);
+            callback.call(exports, require, exports, module, undefined, global);
+            module.loaded = true;
+
             return module.exports;
         }
     }
@@ -24,6 +37,68 @@
     require.resolve = function(path) {
         return path;
     };
+
+    
+    require.async = function async(index, callback) {
+        var module = cache[index],
+            callbacks, node;
+
+        if (module) {
+            callback(module.exports);
+        } else if ((callbacks = cacheCallbacks[index])) {
+            callbacks[callbacks.length] = callback;
+        } else {
+            node = document.createElement("script");
+            callbacks = cacheCallbacks[index] = [callback];
+
+            node.type = "text/javascript";
+            node.charset = "utf-8";
+            node.async = true;
+
+            function onLoad() {
+                var i = -1,
+                    il = callbacks.length - 1;
+
+                locked = true;
+
+                while (i++ < il) {
+                    callbacks[i](require(index));
+                }
+                delete cacheCallbacks[index];
+            }
+
+            if (node.attachEvent && !(node.attachEvent.toString && node.attachEvent.toString().indexOf("[native code") < 0)) {
+                node.attachEvent("onreadystatechange", onLoad);
+            } else {
+                node.addEventListener("load", onLoad, false);
+            }
+
+            node.src = chunks[index];
+            locked = false;
+
+            document.head.appendChild(node);
+        }
+    };
+
+    global["lsYt3cHK-qBE3-45WH-F9Kh-i1p9UYNKQGfuE"] = function(asyncDependencies) {
+        var i, il, dependency, index;
+
+        if (!locked) {
+            i = -1;
+            il = asyncDependencies.length - 1;
+
+            while (i++ < il) {
+                dependency = asyncDependencies[i];
+                index = dependency[0];
+
+                if (dependencies[index] === null) {
+                    dependencies[index] = dependency[1];
+                }
+            }
+        }
+    };
+
+    
 
     if (typeof(define) === "function" && define.amd) {
         define([], function() {
@@ -37,7 +112,8 @@
         
     }
 }([
-function(require, exports, module, global) {
+function(require, exports, module, undefined, global) {
+/*/var/www/html/node/_dom/dom_caret/example/src/index.js*/
 
 var domCaret = global.domCaret = require(1);
 
@@ -57,12 +133,13 @@ domCaret.set(input, 0, input.value.length);
 domCaret.get(input);
 
 },
-function(require, exports, module, global) {
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/dom_caret@0.0.1/src/index.js*/
 
 var environment = require(2),
     focusNode = require(3),
-    getActiveElement = require(6),
-    isTextInputElement = require(8);
+    getActiveElement = require(4),
+    isTextInputElement = require(5);
 
 
 var domCaret = exports,
@@ -155,7 +232,8 @@ if (!!window.getSelection) {
 
 
 },
-function(require, exports, module, global) {
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/environment@0.0.1/src/index.js*/
 
 var environment = exports,
 
@@ -187,9 +265,10 @@ environment.document = typeof(document) !== "undefined" ? document : {};
 
 
 },
-function(require, exports, module, global) {
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/focus_node@0.0.1/src/index.js*/
 
-var isNode = require(4);
+var isNode = require(6);
 
 
 module.exports = focusNode;
@@ -205,9 +284,62 @@ function focusNode(node) {
 
 
 },
-function(require, exports, module, global) {
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/get_active_element@0.0.1/src/index.js*/
 
-var isFunction = require(5);
+var isDocument = require(13),
+    environment = require(2);
+
+
+var document = environment.document;
+
+
+module.exports = getActiveElement;
+
+
+function getActiveElement(ownerDocument) {
+    ownerDocument = isDocument(ownerDocument) ? ownerDocument : document;
+
+    try {
+        return ownerDocument.activeElement || ownerDocument.body;
+    } catch (e) {
+        return ownerDocument.body;
+    }
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_text_input_element@0.0.1/src/index.js*/
+
+var isNullOrUndefined = require(8);
+
+
+var reIsSupportedInputType = new RegExp("^\\b(" + [
+    "color", "date", "datetime", "datetime-local", "email", "month", "number",
+    "password", "range", "search", "tel", "text", "time", "url", "week"
+].join("|") + ")\\b$");
+
+
+module.exports = isTextInputElement;
+
+
+function isTextInputElement(value) {
+    return !isNullOrUndefined(value) && (
+        (value.nodeName === "INPUT" && reIsSupportedInputType.test(value.type)) ||
+        value.nodeName === "TEXTAREA"
+    );
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_node@0.0.1/src/index.js*/
+
+var isString = require(7),
+    isNullOrUndefined = require(8),
+    isNumber = require(9),
+    isFunction = require(10);
 
 
 var isNode;
@@ -219,10 +351,9 @@ if (typeof(Node) !== "undefined" && isFunction(Node)) {
     };
 } else {
     isNode = function isNode(value) {
-        return (
-            typeof(value) === "object" &&
-            typeof(value.nodeType) === "number" &&
-            typeof(value.nodeName) === "string"
+        return (!isNullOrUndefined(value) &&
+            isNumber(value.nodeType) &&
+            isString(value.nodeName)
         );
     };
 }
@@ -232,7 +363,60 @@ module.exports = isNode;
 
 
 },
-function(require, exports, module, global) {
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_string@0.0.1/src/index.js*/
+
+module.exports = isString;
+
+
+function isString(value) {
+    return typeof(value) === "string" || false;
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_null_or_undefined@0.0.1/src/index.js*/
+
+var isNull = require(11),
+    isUndefined = require(12);
+
+
+module.exports = isNullOrUndefined;
+
+/**
+  isNullOrUndefined accepts any value and returns true
+  if the value is null or undefined. For all other values
+  false is returned.
+  
+  @param {Any}        any value to test
+  @returns {Boolean}  the boolean result of testing value
+
+  @example
+    isNullOrUndefined(null);   // returns true
+    isNullOrUndefined(undefined);   // returns true
+    isNullOrUndefined("string");    // returns false
+**/
+function isNullOrUndefined(value) {
+    return isNull(value) || isUndefined(value);
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_number@0.0.1/src/index.js*/
+
+module.exports = isNumber;
+
+
+function isNumber(value) {
+    return typeof(value) === "number" || false;
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_function@0.0.1/src/index.js*/
 
 var objectToString = Object.prototype.toString,
     isFunction;
@@ -257,158 +441,42 @@ module.exports = isFunction;
 
 
 },
-function(require, exports, module, global) {
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_null@0.0.1/src/index.js*/
 
-var isDocument = require(7),
-    environment = require(2);
-
-
-var document = environment.document;
+module.exports = isNull;
 
 
-module.exports = getActiveElement;
-
-
-function getActiveElement(ownerDocument) {
-    ownerDocument = isDocument(ownerDocument) ? ownerDocument : document;
-
-    try {
-        return ownerDocument.activeElement || ownerDocument.body;
-    } catch (e) {
-        return ownerDocument.body;
-    }
+function isNull(value) {
+    return value === null;
 }
 
 
 },
-function(require, exports, module, global) {
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_undefined@0.0.1/src/index.js*/
 
-var isNode = require(4);
+module.exports = isUndefined;
+
+
+function isUndefined(value) {
+    return value === void(0);
+}
+
+
+},
+function(require, exports, module, undefined, global) {
+/*@nathanfaucett/is_document@0.0.1/src/index.js*/
+
+var isNode = require(6);
 
 
 module.exports = isDocument;
 
 
-function isDocument(obj) {
-    return isNode(obj) && obj.nodeType === 9;
+function isDocument(value) {
+    return isNode(value) && value.nodeType === 9;
 }
 
 
-},
-function(require, exports, module, global) {
-
-var indexOf = require(9),
-    isNullOrUndefined = require(13);
-
-
-var supportedInputTypes = [
-    "color", "date", "datetime", "datetime-local", "email", "month", "number",
-    "password", "range", "search", "tel", "text", "time", "url", "week"
-];
-
-
-module.exports = isTextInputElement;
-
-
-function isTextInputElement(value) {
-    return !isNullOrUndefined(value) && (
-        (value.nodeName === "INPUT" && indexOf(supportedInputTypes, value.type) !== -1) ||
-        value.nodeName === "TEXTAREA"
-    );
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isLength = require(10),
-    isObjectLike = require(12);
-
-
-module.exports = indexOf;
-
-
-function indexOf(array, value, fromIndex) {
-    return (isObjectLike(array) && isLength(array.length)) ? arrayIndexOf(array, value, fromIndex || 0) : -1;
-}
-
-function arrayIndexOf(array, value, fromIndex) {
-    var i = fromIndex - 1,
-        il = array.length - 1;
-
-    while (i++ < il) {
-        if (array[i] === value) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isNumber = require(11);
-
-
-var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
-
-
-module.exports = isLength;
-
-
-function isLength(value) {
-    return isNumber(value) && value > -1 && value % 1 === 0 && value <= MAX_SAFE_INTEGER;
-}
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = isNumber;
-
-
-function isNumber(obj) {
-    return typeof(obj) === "number" || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-var isNullOrUndefined = require(13);
-
-
-module.exports = isObjectLike;
-
-
-function isObjectLike(value) {
-    return (!isNullOrUndefined(value) && typeof(value) === "object") || false;
-}
-
-
-},
-function(require, exports, module, global) {
-
-module.exports = isNullOrUndefined;
-
-/**
-  isNullOrUndefined accepts any value and returns true
-  if the value is null or undefined. For all other values
-  false is returned.
-  
-  @param {Any}        any value to test
-  @returns {Boolean}  the boolean result of testing value
-
-  @example
-    isNullOrUndefined(null);   // returns true
-    isNullOrUndefined(undefined);   // returns true
-    isNullOrUndefined("string");    // returns false
-**/
-function isNullOrUndefined(obj) {
-    return (obj === null || obj === void 0);
-}
-
-
-}], void 0, (new Function("return this;"))()));
+}], {}, void(0), (new Function("return this;"))()));
